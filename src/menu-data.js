@@ -5,7 +5,7 @@
 window.RESTAURANT = {
   name: "22 Patagonia Sushi",
   tagline: "Cocina Japonesa",
-  city: "Boisón, Patagonia",
+  city: "BOLSÓN, PATAGONIA",
   hours: "Mar a Dom · 19:30 – 23:30",
 };
 
