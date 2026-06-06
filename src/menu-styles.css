@@ -69,7 +69,7 @@ body {
 .hero__bg { 
   position: absolute; 
   inset: 0; 
-  background: #F3E7D3;
+  background: #F3E7D3 url('assets/ambiente.svg') no-repeat center / cover;
   background-size: cover;
 }
 .hero__bg img { display: none; }
@@ -277,5 +277,6 @@ body {
 .card__add:hover {
   background: #a01a1a;
 }
+
 
 
