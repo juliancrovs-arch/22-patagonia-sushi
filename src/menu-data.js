@@ -1,11 +1,11 @@
-/* =========================================================================
+﻿/* =========================================================================
    22 PATAGONIA SUSHI — Datos del menú
    Editar precios en el panel de Admin (admin.html) y exportar.
    ========================================================================= */
 window.RESTAURANT = {
   name: "22 Patagonia Sushi",
   tagline: "Cocina Japonesa",
-  city: "Bois�n, Patagonia",
+  city: "Boisón, Patagonia",
   hours: "Mar a Dom · 19:30 – 23:30",
 };
 
