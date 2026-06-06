@@ -295,3 +295,6 @@ body {
 
 
 .topbar__name { color: #B91C1C !important; }
+
+.cart { z-index: 9999 !important; }
+.cart__overlay { z-index: 9998 !important; }
