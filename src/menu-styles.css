@@ -69,7 +69,7 @@ body {
 .hero__bg { 
   position: absolute; 
   inset: 0; 
-  background: #F3E7D3 url('assets/hero-brand.png') no-repeat center center / 90%;
+  background: #F3E7D3 url('assets/hero-brand.png') no-repeat center center / 70%;
   background-size: cover;
 }
 .hero__bg img { display: none; }
@@ -288,3 +288,4 @@ body {
 
 
 .hero__scroll { color: #B91C1C !important; }
+
