@@ -69,7 +69,7 @@ body {
 .hero__bg { 
   position: absolute; 
   inset: 0; 
-  background: #F3E7D3 url('data:image/svg+xml,<svg viewBox="0 0 1200 600" xmlns="http://www.w3.org/2000/svg"><rect width="1200" height="600" fill="%23F3E7D3"/><g opacity="0.12"><path d="M 200 150 Q 250 120 300 150 Q 250 180 200 150" fill="%23888"/><circle cx="300" cy="150" r="8" fill="%23888"/><path d="M 800 400 Q 850 370 900 400 Q 850 430 800 400" fill="%23999"/><circle cx="900" cy="400" r="8" fill="%23999"/></g></svg>');
+  background: #F3E7D3;
   background-size: cover;
 }
 .hero__bg img { display: none; }
@@ -277,4 +277,5 @@ body {
 .card__add:hover {
   background: #a01a1a;
 }
+
 
