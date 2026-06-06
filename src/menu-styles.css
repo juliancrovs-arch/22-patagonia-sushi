@@ -300,3 +300,7 @@ body {
 .cart__overlay { z-index: 9998 !important; }
 
 @media (max-width: 768px) { .cart { width: 100vw; right: -100vw; left: auto; } .cart--open { right: 0; left: 0; } }
+
+/* TOPBAR REDISEÑO */
+.topbar__cart svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.topbar__name { font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }

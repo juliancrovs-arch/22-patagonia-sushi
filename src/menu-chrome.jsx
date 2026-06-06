@@ -64,3 +64,4 @@ function Explore({ cats, onPick }) {
 }
 
 Object.assign(window, { TopBar, Hero, Explore });
+
