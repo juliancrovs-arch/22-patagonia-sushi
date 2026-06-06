@@ -1,0 +1,30 @@
+<svg viewBox="0 0 1200 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="fishGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B7B7B;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#A89999;stop-opacity:0.2" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Fondo gradiente oscuro -->
+  <rect width="1200" height="600" fill="#F3E7D3"/>
+  
+  <!-- Peces decorativos grises -->
+  <g opacity="0.15">
+    <!-- Pez 1 -->
+    <path d="M 200 150 Q 250 120 300 150 Q 250 180 200 150" fill="#666" stroke="#666" stroke-width="2"/>
+    <circle cx="300" cy="150" r="8" fill="#666"/>
+    
+    <!-- Pez 2 -->
+    <path d="M 800 400 Q 850 370 900 400 Q 850 430 800 400" fill="#666" stroke="#666" stroke-width="2"/>
+    <circle cx="900" cy="400" r="8" fill="#666"/>
+    
+    <!-- Pez 3 -->
+    <path d="M 400 500 Q 450 470 500 500 Q 450 530 400 500" fill="#999" stroke="#999" stroke-width="2"/>
+    <circle cx="500" cy="500" r="8" fill="#999"/>
+    
+    <!-- Pez 4 -->
+    <path d="M 950 200 Q 1000 170 1050 200 Q 1000 230 950 200" fill="#888" stroke="#888" stroke-width="2"/>
+    <circle cx="1050" cy="200" r="8" fill="#888"/>
+  </g>
+</svg>
