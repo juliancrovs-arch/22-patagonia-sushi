@@ -1,11 +1,26 @@
 ﻿<svg viewBox="0 0 1200 600" xmlns="http://www.w3.org/2000/svg">
   <rect width="1200" height="600" fill="#F3E7D3"/>
-  <g opacity="0.15" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Pez 1 -->
-    <path d="M 150 180 Q 220 140 280 180 Q 220 220 150 180 M 280 180 L 300 170 L 300 190 Z"/>
-    <!-- Pez 2 -->
-    <path d="M 850 420 Q 920 380 980 420 Q 920 460 850 420 M 980 420 L 1000 410 L 1000 430 Z"/>
-    <!-- Pez 3 -->
-    <path d="M 400 520 Q 470 480 530 520 Q 470 560 400 520 M 530 520 L 550 510 L 550 530 Z"/>
+  <defs>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+  
+  <!-- Pez izquierda grande -->
+  <g opacity="0.18" filter="url(#shadow)">
+    <ellipse cx="280" cy="200" rx="95" ry="60" fill="#8B8680" transform="rotate(-25 280 200)"/>
+    <path d="M 200 180 L 160 160 L 170 200 Z" fill="#8B8680"/>
+    <ellipse cx="330" cy="180" rx="16" ry="20" fill="#A89999"/>
+    <path d="M 250 150 Q 260 140 270 145 Q 265 155 250 160" fill="#9A8F89" opacity="0.6"/>
+    <path d="M 260 200 Q 270 210 280 205 Q 275 215 260 210" fill="#9A8F89" opacity="0.6"/>
+  </g>
+  
+  <!-- Pez derecha grande -->
+  <g opacity="0.16" filter="url(#shadow)" transform="translate(800, 350) scale(-1, 1)">
+    <ellipse cx="280" cy="200" rx="95" ry="60" fill="#888" transform="rotate(-25 280 200)"/>
+    <path d="M 200 180 L 160 160 L 170 200 Z" fill="#888"/>
+    <ellipse cx="330" cy="180" rx="16" ry="20" fill="#999"/>
+    <path d="M 250 150 Q 260 140 270 145 Q 265 155 250 160" fill="#7A6F69" opacity="0.6"/>
+    <path d="M 260 200 Q 270 210 280 205 Q 275 215 260 210" fill="#7A6F69" opacity="0.6"/>
   </g>
 </svg>
