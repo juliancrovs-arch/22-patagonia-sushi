@@ -280,3 +280,8 @@ body {
 
 
 
+
+
+.hero__logo { display: none; }
+.hero__badge { display: none; }
+.hero__divider { display: none; }
