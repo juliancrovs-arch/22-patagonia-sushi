@@ -298,3 +298,5 @@ body {
 
 .cart { z-index: 9999 !important; }
 .cart__overlay { z-index: 9998 !important; }
+
+@media (max-width: 768px) { .cart { width: 100vw; right: -100vw; left: auto; } .cart--open { right: 0; left: 0; } }
