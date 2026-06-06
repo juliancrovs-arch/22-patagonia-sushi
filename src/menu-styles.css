@@ -66,12 +66,7 @@ body {
   position: relative; height: 100dvh; max-height: 720px; min-height: 520px;
   overflow: hidden; display: flex; align-items: center; justify-content: center;
 }
-.hero__bg { 
-  position: absolute; 
-  inset: 0; 
-  background: #F3E7D3 url('assets/hero-brand.png') no-repeat center 40% / min(100%, 500px);
-  background-size: cover;
-}
+.hero__bg { position: absolute; inset: 0; background-color: #F3E7D3; background-image: url('assets/hero-brand.png'); background-repeat: no-repeat; background-position: center center; background-size: 85%; }
 .hero__bg img { display: none; }
 .hero__veil { display: none; }
 .hero__glow {
@@ -288,6 +283,7 @@ body {
 
 
 .hero__scroll { color: #B91C1C !important; }
+
 
 
 
