@@ -1,0 +1,9 @@
+name = "22patagonia-sushi-premium"
+type = "service"
+main = "worker/index.js"
+compatibility_date = "2026-06-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "22patagonia-sushi-menu"
+database_id = "2779f9a0-b531-4949-9f9b-13b9822ef109"

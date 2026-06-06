@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin · 22 Patagonia Sushi</title>
+<style>
+@font-face { font-family:'Genjiro'; src:url('assets/Genjiro.ttf') format('truetype'); font-display:swap; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --ink:#100E0C;--ink-2:#18140F;--ink-3:#221C16;
+  --cream:#F3E7D3;--cream-soft:#E2D6C0;--muted:#9B9183;--muted-2:#6E655A;
+  --red:#B91C1C;--hair:rgba(243,231,211,0.10);--hair-2:rgba(243,231,211,0.055);
+  --font-d:'Genjiro','Shippori Mincho',serif;
+  --font-b:'Zen Kaku Gothic New',sans-serif;
+}
+html,body{background:var(--ink);color:var(--cream-soft);font-family:var(--font-b);-webkit-font-smoothing:antialiased;min-height:100dvh;}
+a{color:inherit;text-decoration:none;}
+
+/* ---- lock screen ---- */
+#lock{position:fixed;inset:0;background:var(--ink);z-index:100;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px;padding:32px;}
+#lock img{height:70px;opacity:.9;}
+#lock h2{font-family:var(--font-d);font-size:26px;color:var(--cream);letter-spacing:.6px;}
+#lock p{font-size:12px;color:var(--muted);letter-spacing:1.4px;text-transform:uppercase;}
+#pin-input{
+  width:180px;text-align:center;
+  background:var(--ink-2);border:1px solid var(--hair);color:var(--cream);
+  font-size:28px;letter-spacing:8px;font-family:monospace;
+  padding:14px 18px;border-radius:14px;outline:none;
+}
+#pin-input:focus{border-color:rgba(185,28,28,.6);}
+#pin-error{font-size:11px;color:var(--red);letter-spacing:1px;opacity:0;}
+#pin-error.show{opacity:1;}
+#unlock-btn{
+  padding:13px 36px;background:var(--red);color:var(--cream);border:none;
+  border-radius:14px;font-family:var(--font-b);font-size:15px;font-weight:600;
+  cursor:pointer;letter-spacing:.4px;
+  transition:filter .2s ease;
+}
+#unlock-btn:hover{filter:brightness(1.1);}
+
+/* ---- wrapper ---- */
+.wrap{max-width:620px;margin:0 auto;padding:0 20px 60px;}
+
+/* ---- topbar ---- */
+.adm-top{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 0 16px;border-bottom:1px solid var(--hair-2);margin-bottom:28px;
+}
+.adm-top__brand{display:flex;align-items:center;gap:10px;}
+.adm-top__brand img{height:26px;}
+.adm-top__name{font-family:var(--font-d);font-size:15px;color:var(--cream);letter-spacing:.5px;}
+.adm-top__badge{font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:var(--red);background:color-mix(in srgb,var(--red) 14%,transparent);padding:4px 10px;border-radius:999px;border:1px solid color-mix(in srgb,var(--red) 40%,transparent);}
+.adm-top__link{font-size:11.5px;color:var(--muted);letter-spacing:.3px;padding:8px 14px;border:1px solid var(--hair);border-radius:10px;transition:border-color .2s,color .2s;}
+.adm-top__link:hover{border-color:var(--hair);color:var(--cream);}
+
+/* ---- título de sección ---- */
+.adm-h{font-family:var(--font-d);font-size:22px;color:var(--cream);letter-spacing:.5px;margin-bottom:4px;}
+.adm-sub{font-size:10.5px;color:var(--muted);letter-spacing:1.6px;text-transform:uppercase;margin-bottom:18px;}
+
+/* ---- dish editor cards ---- */
+.dish-grid{display:flex;flex-direction:column;gap:16px;margin-bottom:32px;}
+.dish-card{
+  display:flex;gap:0;overflow:hidden;
+  border:1px solid var(--hair-2);border-radius:16px;background:var(--ink-2);
+  transition:border-color .2s ease;
+}
+.dish-card:focus-within{border-color:color-mix(in srgb,var(--red) 40%,transparent);}
+.dish-card__img{width:100px;flex-shrink:0;overflow:hidden;position:relative;}
+.dish-card__img img{width:100%;height:100%;object-fit:cover;}
+.dish-card__body{flex:1;min-width:0;padding:13px 14px 14px;display:flex;flex-direction:column;gap:10px;}
+.dish-card__name{font-family:var(--font-d);font-size:18px;color:var(--cream);letter-spacing:.3px;}
+.dish-card__row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.dish-card__label{font-size:10px;color:var(--muted);letter-spacing:1.4px;text-transform:uppercase;flex-shrink:0;width:52px;}
+.dish-input{
+  flex:1;min-width:80px;
+  background:var(--ink-3);border:1px solid var(--hair);color:var(--cream);
+  font-family:var(--font-b);font-size:13.5px;
+  padding:8px 11px;border-radius:9px;outline:none;
+  transition:border-color .2s;
+}
+.dish-input:focus{border-color:color-mix(in srgb,var(--red) 50%,transparent);}
+.dish-input.price-input{font-variant-numeric:tabular-nums;max-width:130px;}
+.tag-select{
+  flex:1;min-width:100px;
+  background:var(--ink-3);border:1px solid var(--hair);color:var(--cream);
+  font-family:var(--font-b);font-size:13px;
+  padding:8px 10px;border-radius:9px;outline:none;cursor:pointer;
+  appearance:none;
+}
+
+/* ---- save / export bar ---- */
+.action-bar{
+  position:sticky;bottom:20px;
+  display:flex;gap:10px;padding:14px 16px;
+  background:rgba(24,20,15,.92);backdrop-filter:blur(12px);
+  border:1px solid var(--hair);border-radius:18px;
+  box-shadow:0 8px 28px rgba(0,0,0,.5);
+}
+.btn-save{
+  flex:1;padding:13px;background:var(--red);color:var(--cream);border:none;
+  border-radius:12px;font-family:var(--font-b);font-size:14px;font-weight:600;cursor:pointer;
+  letter-spacing:.3px;transition:filter .2s ease;
+}
+.btn-save:hover{filter:brightness(1.1);}
+.btn-export{
+  padding:13px 16px;background:transparent;color:var(--cream-soft);
+  border:1px solid var(--hair);border-radius:12px;
+  font-family:var(--font-b);font-size:13px;cursor:pointer;
+  white-space:nowrap;transition:border-color .2s,color .2s;
+}
+.btn-export:hover{border-color:var(--hair);color:var(--cream);}
+
+/* ---- toast ---- */
+.toast{
+  position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(16px);
+  background:#1d3a26;border:1px solid rgba(105,190,115,.4);color:#d8f0dc;
+  padding:12px 20px;border-radius:12px;font-size:13px;
+  opacity:0;transition:all .3s ease;pointer-events:none;white-space:nowrap;z-index:200;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<!-- Lock screen -->
+<div id="lock">
+  <img src="assets/lantern-cream.png" alt="" />
+  <h2>Panel de Administración</h2>
+  <p>Ingresá el PIN para continuar</p>
+  <input type="password" id="pin-input" placeholder="····" maxlength="6" inputmode="numeric" />
+  <p id="pin-error">PIN incorrecto</p>
+  <button id="unlock-btn">Ingresar</button>
+</div>
+
+<!-- Admin content (hidden until unlock) -->
+<div id="admin" style="display:none">
+  <div class="wrap">
+    <div class="adm-top">
+      <div class="adm-top__brand">
+        <img src="assets/lantern-cream.png" alt="" />
+        <span class="adm-top__name">22 Patagonia Sushi</span>
+        <span class="adm-top__badge">Admin</span>
+      </div>
+      <a href="index.html" class="adm-top__link">Ver carta →</a>
+    </div>
+
+    <h2 class="adm-h">Gestionar Platos</h2>
+    <p class="adm-sub">Editá precios, descripciones y etiquetas</p>
+
+    <div id="dish-grid" class="dish-grid"></div>
+
+    <div class="action-bar">
+      <button class="btn-save" id="btn-save">Guardar cambios</button>
+      <button class="btn-export" id="btn-export">Exportar menu-data.js</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="menu-data.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
