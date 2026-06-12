@@ -5,7 +5,13 @@ const { useState, useEffect, useRef, useCallback } = React;
 
 function App() {
   const [scrolled, setScrolled] = useState(false);
-  const [menu, setMenu] = useState(window.MENU);
+  const [menu, setMenu] = useState(window.MENU || window.MENU_STATIC || []);
+
+  useEffect(() => {
+    const handler = () => setMenu(window.MENU || []);
+    window.addEventListener("menu-ready", handler);
+    return () => window.removeEventListener("menu-ready", handler);
+  }, []);
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
 
