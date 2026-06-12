@@ -1,60 +1,57 @@
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Pin',
+};
+
+const ADMIN_PIN = "2222";
+
 export default {
-    async fetch(request, env) {
-        const url = new URL(request.url);
-        const path = url.pathname;
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    const path = url.pathname;
 
-        const corsHeaders = {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
-        };
+    if (request.method === 'OPTIONS') return new Response(null, { headers: CORS });
 
-        if (request.method === 'OPTIONS') {
-            return new Response(null, { headers: corsHeaders });
-        }
+    try {
+      /* ── GET /api/menu → devuelve el menú completo ── */
+      if (path === '/api/menu' && request.method === 'GET') {
+        const row = await env.DB.prepare('SELECT value FROM kv_store WHERE key = ?').bind('menu').first();
+        if (!row) return new Response('null', { headers: { ...CORS, 'Content-Type': 'application/json' } });
+        return new Response(row.value, { headers: { ...CORS, 'Content-Type': 'application/json' } });
+      }
 
-        try {
-            const db = env.DB;
+      /* ── POST /api/menu → guarda el menú completo ── */
+      if (path === '/api/menu' && request.method === 'POST') {
+        const pin = request.headers.get('X-Admin-Pin');
+        if (pin !== ADMIN_PIN) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: CORS });
+        const body = await request.text();
+        JSON.parse(body); // validar JSON
+        await env.DB.prepare('INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)').bind('menu', body).run();
+        return new Response(JSON.stringify({ ok: true }), { headers: CORS });
+      }
 
-            // GET Menú
-            if (path === '/api/menu' && request.method === 'GET') {
-                const result = await db.prepare('SELECT * FROM dishes ORDER BY category, name').all();
-                return new Response(JSON.stringify(result.results || []), { headers: corsHeaders });
-            }
+      /* ── POST /api/foto → guarda foto base64 de un plato ── */
+      if (path === '/api/foto' && request.method === 'POST') {
+        const pin = request.headers.get('X-Admin-Pin');
+        if (pin !== ADMIN_PIN) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: CORS });
+        const { id, base64 } = await request.json();
+        await env.DB.prepare('INSERT OR REPLACE INTO kv_store (key, value) VALUES (?, ?)').bind('foto_' + id, base64).run();
+        return new Response(JSON.stringify({ ok: true, key: 'foto_' + id }), { headers: CORS });
+      }
 
-            // POST Plato
-            if (path === '/api/menu' && request.method === 'POST') {
-                const dish = await request.json();
-                await db.prepare(
-                    'INSERT INTO dishes (id, name, category, description, en, price, image, tag) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-                ).bind(dish.id, dish.name, dish.category, dish.desc, dish.en, dish.price, dish.image || null, dish.tag || null).run();
-                return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
-            }
+      /* ── GET /api/foto/:id ── */
+      if (path.startsWith('/api/foto/') && request.method === 'GET') {
+        const id = path.replace('/api/foto/', '');
+        const row = await env.DB.prepare('SELECT value FROM kv_store WHERE key = ?').bind('foto_' + id).first();
+        if (!row) return new Response('null', { headers: CORS });
+        return new Response(JSON.stringify({ base64: row.value }), { headers: CORS });
+      }
 
-            // DELETE Plato
-            if (path.match(/^\/api\/menu\/\d+$/) && request.method === 'DELETE') {
-                const id = path.split('/').pop();
-                await db.prepare('DELETE FROM dishes WHERE id=?').bind(parseInt(id)).run();
-                return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
-            }
+      return new Response(JSON.stringify({ error: 'Not found' }), { status: 404, headers: CORS });
 
-            // GET Categorías
-            if (path === '/api/categories' && request.method === 'GET') {
-                const result = await db.prepare('SELECT * FROM categories ORDER BY name').all();
-                return new Response(JSON.stringify(result.results || []), { headers: corsHeaders });
-            }
-
-            // POST Categoría
-            if (path === '/api/categories' && request.method === 'POST') {
-                const cat = await request.json();
-                await db.prepare('INSERT OR IGNORE INTO categories (name, icon) VALUES (?, ?)').bind(cat.name, cat.icon).run();
-                return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
-            }
-
-            return new Response(JSON.stringify({ error: 'Not found' }), { status: 404, headers: corsHeaders });
-        } catch (error) {
-            console.error(error);
-            return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: corsHeaders });
-        }
+    } catch (err) {
+      return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: CORS });
     }
+  }
 };
