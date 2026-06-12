@@ -1,5 +1,5 @@
 /* =========================================================================
-   22 PATAGONIA SUSHI — Admin JS v3 · guarda directo en Cloudflare D1
+   22 PATAGONIA SUSHI — Admin JS v4 · con cropper de fotos
    PIN: 2222
    ========================================================================= */
 const ADMIN_PIN = "2222";
@@ -26,6 +26,120 @@ function tryUnlock() {
 unlockBtn.addEventListener("click", tryUnlock);
 pinInput.addEventListener("keydown", (e) => { if (e.key === "Enter") tryUnlock(); });
 
+/* ── Cropper modal ── */
+const cropperCSS = `
+#cropper-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center; flex-direction:column; gap:16px; }
+#cropper-modal.open { display:flex; }
+#cropper-wrap { position:relative; width:300px; height:300px; overflow:hidden; border-radius:12px; border:2px solid #B91C1C; background:#000; cursor:move; touch-action:none; }
+#cropper-img { position:absolute; transform-origin:top left; user-select:none; pointer-events:none; }
+#cropper-frame { position:absolute; inset:0; border:3px dashed rgba(255,255,255,0.5); border-radius:12px; pointer-events:none; }
+.cropper-btns { display:flex; gap:12px; }
+.cropper-btns button { padding:10px 24px; border:none; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600; letter-spacing:1px; }
+#btn-crop-ok { background:#B91C1C; color:#fff; }
+#btn-crop-cancel { background:#333; color:#ccc; }
+.crop-controls { display:flex; gap:10px; align-items:center; }
+.crop-controls button { background:#222; color:#fff; border:none; border-radius:6px; padding:6px 14px; cursor:pointer; font-size:18px; }
+`;
+const styleEl = document.createElement("style");
+styleEl.textContent = cropperCSS;
+document.head.appendChild(styleEl);
+
+const cropperModal = document.createElement("div");
+cropperModal.id = "cropper-modal";
+cropperModal.innerHTML = `
+  <p style="color:#fff;font-size:12px;letter-spacing:2px;text-transform:uppercase;">AJUSTÁ LA FOTO · Arrastrá para centrar</p>
+  <div id="cropper-wrap">
+    <img id="cropper-img" draggable="false"/>
+    <div id="cropper-frame"></div>
+  </div>
+  <div class="crop-controls">
+    <button id="btn-zoom-out">−</button>
+    <span style="color:#aaa;font-size:12px;">Zoom</span>
+    <button id="btn-zoom-in">+</button>
+  </div>
+  <div class="cropper-btns">
+    <button id="btn-crop-cancel">Cancelar</button>
+    <button id="btn-crop-ok">✓ Usar esta foto</button>
+  </div>
+`;
+document.body.appendChild(cropperModal);
+
+let cropState = { x:0, y:0, scale:1, dragging:false, startX:0, startY:0, imgW:0, imgH:0, onConfirm:null };
+
+const cropImg = document.getElementById("cropper-img");
+const cropWrap = document.getElementById("cropper-wrap");
+
+function applyTransform() {
+  cropImg.style.transform = `translate(${cropState.x}px, ${cropState.y}px) scale(${cropState.scale})`;
+}
+
+cropWrap.addEventListener("mousedown", (e) => {
+  cropState.dragging = true;
+  cropState.startX = e.clientX - cropState.x;
+  cropState.startY = e.clientY - cropState.y;
+});
+cropWrap.addEventListener("touchstart", (e) => {
+  cropState.dragging = true;
+  cropState.startX = e.touches[0].clientX - cropState.x;
+  cropState.startY = e.touches[0].clientY - cropState.y;
+}, { passive: true });
+window.addEventListener("mousemove", (e) => {
+  if (!cropState.dragging) return;
+  cropState.x = e.clientX - cropState.startX;
+  cropState.y = e.clientY - cropState.startY;
+  applyTransform();
+});
+window.addEventListener("touchmove", (e) => {
+  if (!cropState.dragging) return;
+  cropState.x = e.touches[0].clientX - cropState.startX;
+  cropState.y = e.touches[0].clientY - cropState.startY;
+  applyTransform();
+}, { passive: true });
+window.addEventListener("mouseup", () => cropState.dragging = false);
+window.addEventListener("touchend", () => cropState.dragging = false);
+
+document.getElementById("btn-zoom-in").addEventListener("click", () => { cropState.scale = Math.min(cropState.scale + 0.15, 4); applyTransform(); });
+document.getElementById("btn-zoom-out").addEventListener("click", () => { cropState.scale = Math.max(cropState.scale - 0.15, 0.3); applyTransform(); });
+document.getElementById("btn-crop-cancel").addEventListener("click", () => cropperModal.classList.remove("open"));
+document.getElementById("btn-crop-ok").addEventListener("click", () => {
+  // Renderizar el recorte
+  const canvas = document.createElement("canvas");
+  canvas.width = 400; canvas.height = 400;
+  const ctx = canvas.getContext("2d");
+  // El wrap es 300x300, escalar a 400x400
+  const ratio = 400 / 300;
+  ctx.save();
+  ctx.translate(cropState.x * ratio, cropState.y * ratio);
+  ctx.scale(cropState.scale, cropState.scale);
+  ctx.drawImage(cropImg, 0, 0, cropState.imgW * ratio, cropState.imgH * ratio);
+  ctx.restore();
+  const base64 = canvas.toDataURL("image/jpeg", 0.85);
+  cropperModal.classList.remove("open");
+  if (cropState.onConfirm) cropState.onConfirm(base64);
+});
+
+function openCropper(src, onConfirm) {
+  cropImg.src = src;
+  cropImg.onload = () => {
+    const w = cropImg.naturalWidth;
+    const h = cropImg.naturalHeight;
+    // Escalar para que entre en 300px
+    const s = Math.max(300 / w, 300 / h);
+    cropState.scale = s;
+    cropState.x = (300 - w * s) / 2;
+    cropState.y = (300 - h * s) / 2;
+    cropState.imgW = w;
+    cropState.imgH = h;
+    cropState.dragging = false;
+    cropState.onConfirm = onConfirm;
+    cropImg.style.width = w + "px";
+    cropImg.style.height = h + "px";
+    applyTransform();
+    cropperModal.classList.add("open");
+  };
+}
+
+/* ── Tag options ── */
 const TAG_OPTIONS = [
   { value: "",       label: "Sin etiqueta" },
   { value: "pop",    label: "Más pedido" },
@@ -36,7 +150,6 @@ const TAG_OPTIONS = [
 
 let currentMenu = [];
 
-/* ── Cargar menú desde D1 o fallback a window.MENU ── */
 async function loadAndBuild() {
   showToast("Cargando carta...");
   try {
@@ -49,7 +162,6 @@ async function loadAndBuild() {
   buildAdmin();
 }
 
-/* ── Guardar menú en D1 ── */
 async function saveMenu() {
   const btn = document.getElementById("btn-save");
   btn.textContent = "Guardando...";
@@ -61,11 +173,8 @@ async function saveMenu() {
       body: JSON.stringify(currentMenu)
     });
     const data = await res.json();
-    if (data.ok) {
-      showToast("✓ Carta guardada — se actualiza en el sitio al instante");
-    } else {
-      showToast("❌ Error al guardar: " + (data.error || "desconocido"));
-    }
+    if (data.ok) showToast("✓ Carta guardada — se actualiza en el sitio al instante");
+    else showToast("❌ Error: " + (data.error || "desconocido"));
   } catch (err) {
     showToast("❌ Error de conexión: " + err.message);
   }
@@ -73,7 +182,6 @@ async function saveMenu() {
   btn.disabled = false;
 }
 
-/* ── Construir UI ── */
 function buildAdmin() {
   const grid = document.getElementById("dish-grid");
   grid.innerHTML = "";
@@ -132,7 +240,6 @@ function buildDishCard(item, ci, ii) {
   const body = document.createElement("div");
   body.className = "dish-card__body";
 
-  // Nombre
   const nameRow = document.createElement("div");
   nameRow.className = "dish-card__row";
   nameRow.innerHTML = `<span class="dish-card__label">Nombre</span>`;
@@ -143,7 +250,6 @@ function buildDishCard(item, ci, ii) {
   nameRow.appendChild(nameInput);
   body.appendChild(nameRow);
 
-  // Precio
   const priceRow = document.createElement("div");
   priceRow.className = "dish-card__row";
   priceRow.innerHTML = `<span class="dish-card__label">Precio $</span>`;
@@ -154,7 +260,6 @@ function buildDishCard(item, ci, ii) {
   priceRow.appendChild(priceInput);
   body.appendChild(priceRow);
 
-  // Descripción
   const descRow = document.createElement("div");
   descRow.className = "dish-card__row"; descRow.style.alignItems = "flex-start";
   descRow.innerHTML = `<span class="dish-card__label" style="padding-top:9px">Desc</span>`;
@@ -165,7 +270,6 @@ function buildDishCard(item, ci, ii) {
   descRow.appendChild(descInput);
   body.appendChild(descRow);
 
-  // Tag
   const tagRow = document.createElement("div");
   tagRow.className = "dish-card__row";
   tagRow.innerHTML = `<span class="dish-card__label">Tag</span>`;
@@ -181,7 +285,6 @@ function buildDishCard(item, ci, ii) {
   tagRow.appendChild(tagSel);
   body.appendChild(tagRow);
 
-  // Eliminar
   const delBtn = document.createElement("button");
   delBtn.className = "btn-delete-dish";
   delBtn.dataset.ci = ci; delBtn.dataset.ii = ii;
@@ -219,30 +322,24 @@ function addCategory() {
 function openFotoPicker(ci, ii) {
   const input = document.createElement("input");
   input.type = "file"; input.accept = "image/*";
-  input.onchange = async (e) => {
+  input.onchange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    // Comprimir a max 400px
-    const bitmap = await createImageBitmap(file);
-    const canvas = document.createElement("canvas");
-    const MAX = 400;
-    const ratio = Math.min(MAX / bitmap.width, MAX / bitmap.height, 1);
-    canvas.width = Math.round(bitmap.width * ratio);
-    canvas.height = Math.round(bitmap.height * ratio);
-    canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-    const base64 = canvas.toDataURL("image/jpeg", 0.82);
-
-    currentMenu[ci].items[ii].img = base64;
-    const imgEl = document.getElementById(`img-${ci}-${ii}`);
-    if (imgEl) imgEl.innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;" />`;
-    showToast("✓ Foto cargada — tocá Guardar para aplicar");
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      openCropper(ev.target.result, (base64) => {
+        currentMenu[ci].items[ii].img = base64;
+        const imgEl = document.getElementById(`img-${ci}-${ii}`);
+        if (imgEl) imgEl.innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;" />`;
+        showToast("✓ Foto ajustada — tocá Guardar para aplicar");
+      });
+    };
+    reader.readAsDataURL(file);
   };
   input.click();
 }
 
 document.getElementById("btn-save").addEventListener("click", saveMenu);
-
-/* Ocultar btn-export si existe */
 const btnExp = document.getElementById("btn-export");
 if (btnExp) btnExp.style.display = "none";
 
